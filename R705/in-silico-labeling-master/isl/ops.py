@@ -155,7 +155,7 @@ def _distribution_statistics(distribution: tf.Tensor) -> tf.Tensor:
             ((values - tf.reshape(mean, [-1, 1]))**2) * distribution, axis=1))
     probability_nonzero = 1.0 - distribution[:, 0]
     entropy = tf.reduce_sum(
-        -(distribution * tf.log(distribution + 0.0000001)), axis=1) / tf.log(
+        -(distribution * tf.math.log(distribution + 0.0000001)), axis=1) / tf.math.log(
             float(num_classes))
 
     statistics = tf.stack(

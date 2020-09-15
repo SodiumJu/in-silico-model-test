@@ -281,7 +281,7 @@ def cross_entropy_error(
                      [target_lt, predicted_lt]) as scope:
     epsilon = 0.000001
     product_lt = lt.LabeledTensor(
-        tf.log(predicted_lt.tensor + epsilon), predicted_lt.axes) * target_lt
+        tf.math.log(predicted_lt.tensor + epsilon), predicted_lt.axes) * target_lt
     cross_entropy_lt = lt.reduce_sum(product_lt, ['class']) * (-1.0)
 
     num_classes = len(predicted_lt.axes['class'])

@@ -123,7 +123,7 @@ def onehot(
   """
   with tf.name_scope(name, 'onehot', [labeled_tensor]) as scope:
     reshape_op = tf.reshape(labeled_tensor.tensor, [-1])
-    categorical_op = tf.to_int64(tf.round(reshape_op * (num_classes - 1)))
+    categorical_op = tf.compat.v1.to_int64(tf.round(reshape_op * (num_classes - 1)))
     onehot_op = slim.one_hot_encoding(categorical_op, num_classes)
     onehot_op = tf.reshape(
         onehot_op,
@@ -306,9 +306,9 @@ def restore_model(
 
   variables_to_restore = [v for v in all_variables if filter_logits(v)]
   if restore_global_step:
-    variables_to_restore.append(tf.train.get_or_create_global_step())
+    variables_to_restore.append(tf.compat.v1.train.get_or_create_global_step())
 
   for v in variables_to_restore:
     logging.info('Variable to restore: %s', (v.name, v.dtype))
-  restorer = tf.train.Saver(variables_to_restore)
+  restorer = tf.compat.v1.train.Saver(variables_to_restore)
   return lambda sess: restorer.restore(sess, latest_checkpoint)

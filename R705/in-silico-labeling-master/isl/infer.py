@@ -220,7 +220,7 @@ def infer(
         simplify_error_panels)
 
     # There shouldn't be any queues in this configuration.
-    queue_runners = g.get_collection(tf.GraphKeys.QUEUE_RUNNERS)
+    queue_runners = g.get_collection(tf.compat.v1.GraphKeys.QUEUE_RUNNERS)
     if queue_runners:
       raise ValueError('Graph must not have queues, but had: %r', queue_runners)
 

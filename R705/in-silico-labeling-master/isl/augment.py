@@ -80,19 +80,19 @@ def corrupt(offset_standard_deviation: float,
 
     corrupt_lt = lt.LabeledTensor(
         tf.cond(
-            tf.logical_and(do_corrupt(), multiplier_standard_deviation > 0),
+            tf.math.logical_and(do_corrupt(), multiplier_standard_deviation > 0),
             lambda: labeled_tensor * multiplier_lt, lambda: labeled_tensor),
         axes=labeled_tensor.axes)
 
     corrupt_lt = lt.LabeledTensor(
         tf.cond(
-            tf.logical_and(do_corrupt(), offset_standard_deviation > 0),
+            tf.math.logical_and(do_corrupt(), offset_standard_deviation > 0),
             lambda: corrupt_lt + offset_lt, lambda: corrupt_lt),
         axes=labeled_tensor.axes)
 
     corrupt_lt = lt.LabeledTensor(
         tf.cond(
-            tf.logical_and(do_corrupt(), noise_standard_deviation > 0),
+            tf.math.logical_and(do_corrupt(), noise_standard_deviation > 0),
             lambda: corrupt_lt + noise_lt, lambda: corrupt_lt),
         axes=labeled_tensor.axes)
 
