@@ -36,7 +36,7 @@ from isl import tensorcheck
 from isl import util
 from isl.models import model_util
 
-logging = tf.logging
+logging = tf.compat.v1.logging
 lt = tf.contrib.labeled_tensor
 slim = tf.contrib.slim
 

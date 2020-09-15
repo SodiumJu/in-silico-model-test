@@ -24,7 +24,7 @@ from typing import Optional, Tuple
 # pylint: disable=g-bad-import-order
 from isl import tensorcheck
 
-logging = tf.logging
+logging = tf.compat.v1.logging
 lt = tf.contrib.labeled_tensor
 
 
@@ -260,7 +260,7 @@ def patches_to_image(patch_centers: np.ndarray,
                           [("batch", output_batch_size),
                            ("patch_row", num_extracted_rows),
                            ("patch_column", num_extracted_columns)])
-    tf.logging.info("%r", patch_lt.axes)
+    tf.compat.v1.logging.info("%r", patch_lt.axes)
 
     row_lts = []
     for r in range(num_extracted_rows):

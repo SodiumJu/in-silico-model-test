@@ -31,8 +31,8 @@ from isl import ops
 from isl import util
 from isl import visualize
 
-gfile = tf.gfile
-logging = tf.logging
+gfile = tf.io.gfile
+logging = tf.compat.v1.logging
 lt = tf.contrib.labeled_tensor
 
 
@@ -229,7 +229,7 @@ def infer(
     init_fn = util.restore_model(
         restore_directory, restore_logits=True, restore_global_step=True)
 
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
       logging.info('Generating images')
       init_fn(sess)
 

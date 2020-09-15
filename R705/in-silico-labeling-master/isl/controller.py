@@ -32,7 +32,7 @@ from isl import util
 from isl import visualize
 from isl.models import model_util
 
-logging = tf.logging
+logging = tf.compat.v1.logging
 lt = tf.contrib.labeled_tensor
 
 

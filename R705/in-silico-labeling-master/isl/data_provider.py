@@ -30,9 +30,9 @@ from isl import ops
 from isl import tensorcheck
 from isl import util
 
-gfile = tf.gfile
+gfile = tf.io.gfile
 lt = tf.contrib.labeled_tensor
-logging = tf.logging
+logging = tf.compat.v1.logging
 
 # pylint: disable=invalid-name
 ImageMetadata = NamedTuple('ImageMetadata', [

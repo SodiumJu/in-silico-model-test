@@ -26,8 +26,8 @@ import tensorflow as tf
 from typing import Callable, Dict, List, Tuple, Union
 import cv2
 
-gfile = tf.gfile
-logging = tf.logging
+gfile = tf.io.gfile
+logging = tf.compat.v1.logging
 lt = tf.contrib.labeled_tensor
 slim = tf.contrib.slim
 
@@ -291,7 +291,7 @@ def softmax_cross_entropy(target_lt: lt.LabeledTensor,
 def restore_model(
     restore_directory: str,
     restore_logits: bool,
-    restore_global_step: bool = False) -> Callable[[tf.Session], Callable]:
+    restore_global_step: bool = False) -> Callable[[tf.compat.v1.Session], Callable]:
   """Creates a function to restore model parameters."""
   logging.info('Restoring model from %s', restore_directory)
   latest_checkpoint = tf.train.latest_checkpoint(restore_directory)

@@ -36,7 +36,7 @@ from isl import tensorcheck
 from isl import util
 from isl.models import model_util
 
-logging = tf.logging
+logging = tf.compat.v1.logging
 
 # The standard convolution sizes for in-scale Minception model_util.modules.
 IN_SCALE_EXPANSION_SIZE = 3

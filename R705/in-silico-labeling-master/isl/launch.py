@@ -40,10 +40,10 @@ from isl.models import model_util
 
 slim = tf.contrib.slim
 metrics = tf.contrib.metrics
-app = tf.app
-logging = tf.logging
+app = tf.compat.v1.app
+logging = tf.compat.v1.logging
 flags = tf.flags
-gfile = tf.gfile
+gfile = tf.io.gfile
 lt = tf.contrib.labeled_tensor
 
 MODE_TRAIN = 'TRAIN'

@@ -27,7 +27,7 @@ import test_util
 flags = tf.flags
 test = tf.test
 lt = tf.contrib.labeled_tensor
-gfile = tf.gfile
+gfile = tf.io.gfile
 
 FLAGS = flags.FLAGS
 

@@ -26,7 +26,7 @@ from typing import List, Tuple
 from isl import tensorcheck
 from isl import util
 
-logging = tf.logging
+logging = tf.compat.v1.logging
 lt = tf.contrib.labeled_tensor
 slim = tf.contrib.slim
 

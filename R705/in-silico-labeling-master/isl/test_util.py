@@ -29,8 +29,8 @@ from isl import data_provider
 from isl import util
 
 flags = tf.flags
-gfile = tf.gfile
-logging = tf.logging
+gfile = tf.io.gfile
+logging = tf.compat.v1.logging
 lt = tf.contrib.labeled_tensor
 
 FLAGS = flags.FLAGS
