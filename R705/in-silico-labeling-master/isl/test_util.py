@@ -215,7 +215,7 @@ class Base(tf.test.TestCase):
     images = self.eval(image_lts)
 
     path = os.path.join(os.environ['TEST_TMPDIR'], directory)
-    if not gfile.Exists(path):
+    if not os.path.exists(path):
       gfile.MkDir(path)
 
     for f, i in zip(filenames, images):
@@ -243,7 +243,7 @@ class Base(tf.test.TestCase):
     for gip in golden_image_paths:
       test_image_path = os.path.join(os.environ['TEST_TMPDIR'], directory,
                                      os.path.basename(gip))
-      assert gfile.Exists(
+      assert os.path.exists(
           test_image_path), "Test image doesn't exist: %s" % test_image_path
 
       golden = util.read_image(gip)

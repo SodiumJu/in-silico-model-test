@@ -77,7 +77,7 @@ def image_size(directory: str) -> Tuple[int, int]:
   png_paths = []
   for f in gfile.ListDirectory(directory):
     path = os.path.join(directory, f)
-    if gfile.Exists(path) and os.path.splitext(f)[1] == '.png':
+    if os.path.exists(path) and os.path.splitext(f)[1] == '.png':
       png_paths.append(os.path.join(directory, f))
   if not png_paths:
     raise ValueError('No pngs in %s', directory)

@@ -69,7 +69,7 @@ def load_image_set(directory: str) -> Dict[ImageMetadata, np.ndarray]:
   image_set = {}
   for f in gfile.ListDirectory(directory):
     path = os.path.join(directory, f)
-    if gfile.Exists(path) and os.path.splitext(
+    if os.path.exists(path) and os.path.splitext(
         f)[1] == '.png' and 'PREDICTED' not in f:
       image_set[parse_image_path(path)] = util.read_image(path)
 

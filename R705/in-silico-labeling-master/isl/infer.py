@@ -287,7 +287,7 @@ def infer(
           })
 
       output_directory = os.path.join(output_directory, '%.8d' % global_step)
-      if not gfile.Exists(output_directory):
+      if not os.path.exists(output_directory):
         gfile.MakeDirs(output_directory)
 
       util.write_image(
