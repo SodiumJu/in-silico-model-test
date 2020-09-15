@@ -545,7 +545,7 @@ def export(gitapp: controller.GetInputTargetAndPredictedParameters):
 def infer_single_image(gitapp: controller.GetInputTargetAndPredictedParameters):
   """Predicts the labels for a single image."""
   if not os.path.exists(output_directory()):
-    gfile.MakeDirs(output_directory())
+    os.makedirs(output_directory())
 
   if FLAGS.infer_channel_whitelist is not None:
     infer_channel_whitelist = FLAGS.infer_channel_whitelist.split(',')
@@ -573,7 +573,7 @@ def main(_):
     assert FLAGS.metric == METRIC_LOSS
 
   if FLAGS.task == 0 and not os.path.exists(FLAGS.base_directory):
-    gfile.MakeDirs(FLAGS.base_directory)
+    os.makedirs(FLAGS.base_directory)
 
   gitapp = parameters()
   if FLAGS.metric == METRIC_INFER_FULL:

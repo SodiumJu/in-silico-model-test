@@ -288,7 +288,7 @@ def infer(
 
       output_directory = os.path.join(output_directory, '%.8d' % global_step)
       if not os.path.exists(output_directory):
-        gfile.MakeDirs(output_directory)
+        os.makedirs(output_directory)
 
       util.write_image(
           os.path.join(output_directory, 'input_error_panel.png'),
