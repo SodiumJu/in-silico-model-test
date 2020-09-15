@@ -106,8 +106,8 @@ def infer(
 
   g = tf.Graph()
   with g.as_default():
-    row_start = tf.placeholder(dtype=np.int32, shape=[])
-    column_start = tf.placeholder(dtype=np.int32, shape=[])
+    row_start = tf.compat.v1.placeholder(dtype=np.int32, shape=[])
+    column_start = tf.compat.v1.placeholder(dtype=np.int32, shape=[])
     # Replace the parameters with a new set, which will cause the network to
     # run inference in just a local region.
     gitapp = gitapp._replace(
@@ -132,7 +132,7 @@ def infer(
         visualization_lts['predict_target'])
 
     input_lt = lt.LabeledTensor(
-        tf.placeholder(
+        tf.compat.v1.placeholder(
             dtype=np.float32,
             shape=[
                 1, num_output_rows, num_output_columns,
@@ -147,7 +147,7 @@ def infer(
             ('mask', [False, True]),
         ])
     predict_input_lt = lt.LabeledTensor(
-        tf.placeholder(
+        tf.compat.v1.placeholder(
             dtype=np.float32,
             shape=[
                 1,
@@ -169,7 +169,7 @@ def infer(
         input_lt, predict_input_lt, simplify_error_panels)
 
     target_lt = lt.LabeledTensor(
-        tf.placeholder(
+        tf.compat.v1.placeholder(
             dtype=np.float32,
             shape=[
                 1, num_output_rows, num_output_columns,
@@ -185,7 +185,7 @@ def infer(
             ('mask', [False, True]),
         ])
     predict_target_lt = lt.LabeledTensor(
-        tf.placeholder(
+        tf.compat.v1.placeholder(
             dtype=np.float32,
             shape=[
                 1,

@@ -102,7 +102,7 @@ def shape_unlabeled(tensor: tf.Tensor, name: Optional[str] = None) -> tf.Tensor:
       s = tensor.shape.as_list()
       # Create a version of the tensor without a statically known shape, to
       # force tf.shape to check the shape.
-      tensor_copy = tf.placeholder_with_default(
+      tensor_copy = tf.compat.v1.placeholder_with_default(
           tensor, shape=[None] * len(tensor.shape.as_list()))
       assert None not in s, s
       assert_op = tf.assert_equal(
