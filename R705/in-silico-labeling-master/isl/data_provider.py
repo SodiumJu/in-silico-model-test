@@ -30,7 +30,7 @@ from isl import ops
 from isl import tensorcheck
 from isl import util
 
-gfile = tf.io.gfile
+gfile = tf.compat.v1.gfile
 lt = tf.contrib.labeled_tensor
 logging = tf.compat.v1.logging
 

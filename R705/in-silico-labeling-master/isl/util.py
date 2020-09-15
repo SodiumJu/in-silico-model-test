@@ -26,7 +26,7 @@ import tensorflow as tf
 from typing import Callable, Dict, List, Tuple, Union
 import cv2
 
-gfile = tf.io.gfile
+gfile = tf.compat.v1.gfile
 logging = tf.compat.v1.logging
 lt = tf.contrib.labeled_tensor
 slim = tf.contrib.slim
