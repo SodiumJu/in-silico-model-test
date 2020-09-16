@@ -69,7 +69,7 @@ def core(
     The output of the core model as an embedding layer.
     Network heads should take this layer as input.
   """
-  with tf.name_scope(name, 'concordance_core', [input_op]) as scope:
+  with tf.compat.v1.name_scope(name, 'concordance_core', [input_op]) as scope:
     # Ensure the input data is in the range [0.0, 1.0].
     input_op = tensorcheck.bounds_unlabeled(0.0, 1.0, input_op)
 

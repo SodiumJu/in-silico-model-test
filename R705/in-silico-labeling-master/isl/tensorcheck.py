@@ -48,11 +48,11 @@ def bounds_unlabeled(lower: float,
   Returns:
     The input tensor.
   """
-  with tf.name_scope(name, 'check_bounds', [tensor]) as scope:
+  with tf.compat.v1.name_scope(name, 'check_bounds', [tensor]) as scope:
     if FLAGS.tensorcheck_enable_checks:
-      lower_bound_op = tf.assert_non_negative(
+      lower_bound_op = tf.compat.v1.assert_non_negative(
           tensor - lower, name='lower_bound')
-      upper_bound_op = tf.assert_non_positive(
+      upper_bound_op = tf.compat.v1.assert_non_positive(
           tensor - upper, name='upper_bound')
       with tf.control_dependencies([lower_bound_op, upper_bound_op]):
         tensor = tf.identity(tensor, name=scope)
@@ -75,7 +75,7 @@ def bounds(lower: float,
   Returns:
     The input tensor.
   """
-  with tf.name_scope(name, 'lt_check_bounds', [labeled_tensor]) as scope:
+  with tf.compat.v1.name_scope(name, 'lt_check_bounds', [labeled_tensor]) as scope:
     return lt.LabeledTensor(
         bounds_unlabeled(lower, upper, labeled_tensor.tensor, name=scope),
         labeled_tensor.axes)
@@ -97,7 +97,7 @@ def shape_unlabeled(tensor: tf.Tensor, name: Optional[str] = None) -> tf.Tensor:
   Returns:
     The input tensor.
   """
-  with tf.name_scope(name, 'check_shape', [tensor]) as scope:
+  with tf.compat.v1.name_scope(name, 'check_shape', [tensor]) as scope:
     if FLAGS.tensorcheck_enable_checks:
       s = tensor.shape.as_list()
       # Create a version of the tensor without a statically known shape, to
@@ -105,9 +105,9 @@ def shape_unlabeled(tensor: tf.Tensor, name: Optional[str] = None) -> tf.Tensor:
       tensor_copy = tf.compat.v1.placeholder_with_default(
           tensor, shape=[None] * len(tensor.shape.as_list()))
       assert None not in s, s
-      assert_op = tf.assert_equal(
+      assert_op = tf.compat.v1.assert_equal(
           tf.constant(s, dtype=tf.int64),
-          tf.shape(tensor_copy, out_type=tf.int64),
+          tf.shape(input=tensor_copy, out_type=tf.int64),
           message=
           'Runtime shape does not match shape at graph construction time.')
       with tf.control_dependencies([assert_op]):
@@ -135,7 +135,7 @@ def shape(labeled_tensor: lt.LabeledTensor,
   Returns:
     The input tensor.
   """
-  with tf.name_scope(name, 'tensorcheck.shape', [labeled_tensor]) as scope:
+  with tf.compat.v1.name_scope(name, 'tensorcheck.shape', [labeled_tensor]) as scope:
     return lt.LabeledTensor(
         shape_unlabeled(labeled_tensor.tensor, name=scope), labeled_tensor.axes)
 
@@ -167,7 +167,7 @@ def well_defined():
         if isinstance(a, tf.Tensor):
           new_a = shape_unlabeled(a)
           if a.dtype in float_types:
-            new_a = tf.verify_tensor_all_finite(new_a, msg='')
+            new_a = tf.compat.v1.verify_tensor_all_finite(new_a, msg='')
         elif isinstance(a, lt.LabeledTensor):
           new_a = shape(a)
           if a.tensor.dtype in float_types:

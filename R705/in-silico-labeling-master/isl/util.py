@@ -121,7 +121,7 @@ def onehot(
     The classes are computed by dividing the unit interval into num_classes
     bins.
   """
-  with tf.name_scope(name, 'onehot', [labeled_tensor]) as scope:
+  with tf.compat.v1.name_scope(name, 'onehot', [labeled_tensor]) as scope:
     reshape_op = tf.reshape(labeled_tensor.tensor, [-1])
     categorical_op = tf.compat.v1.to_int64(tf.round(reshape_op * (num_classes - 1)))
     onehot_op = slim.one_hot_encoding(categorical_op, num_classes)
@@ -149,7 +149,7 @@ def crop_center(
   Returns:
     The center cropped tensor.
   """
-  with tf.name_scope(name, 'crop_center', [input_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'crop_center', [input_lt]) as scope:
     num_rows = len(input_lt.axes['row'])
     num_columns = len(input_lt.axes['column'])
 
@@ -203,7 +203,7 @@ def pad_constant(
     A tensor with the indicated axes padded, optionally with those axes extended
     with the provided labels.
   """
-  with tf.name_scope(name, 'pad_constant', [labeled_tensor]) as scope:
+  with tf.compat.v1.name_scope(name, 'pad_constant', [labeled_tensor]) as scope:
     # The constant padding value is zero.
     zero_padded_lt = lt.pad(labeled_tensor, paddings, 'CONSTANT')
 
@@ -242,7 +242,7 @@ def entry_point_batch(
     The rebatched inputs.
   """
   assert len(input_lts) == len(entry_point_names)
-  with tf.name_scope(''):
+  with tf.compat.v1.name_scope(''):
     input_lts = [
         lt.identity(t, name='entry_point_%s_pre_batch' % n)
         for (t, n) in zip(input_lts, entry_point_names)
@@ -254,7 +254,7 @@ def entry_point_batch(
       capacity=bp.capacity,
       enqueue_many=enqueue_many,
       name=name)
-  with tf.name_scope(''):
+  with tf.compat.v1.name_scope(''):
     batch_lts = [
         lt.identity(t, name='entry_point_%s_post_batch' % n)
         for (t, n) in zip(batch_lts, entry_point_names)
@@ -268,16 +268,16 @@ def softmax_cross_entropy(target_lt: lt.LabeledTensor,
                           predicted_lt: lt.LabeledTensor,
                           name: str = None) -> lt.LabeledTensor:
   """Rescaled sparse softmax cross entropy."""
-  with tf.name_scope(name, 'softmax_cross_entropy',
+  with tf.compat.v1.name_scope(name, 'softmax_cross_entropy',
                      [target_lt, mask_lt, predicted_lt]) as scope:
     target_lt = lt.transpose(target_lt, ['batch'])
     mask_lt = lt.transpose(mask_lt, ['batch'])
     predicted_lt = lt.transpose(predicted_lt, ['batch', 'class'])
 
     num_classes = len(predicted_lt.axes['class'])
-    target_op = tf.to_int32(tf.round(target_lt.tensor * (num_classes - 1)))
+    target_op = tf.cast(tf.round(target_lt.tensor * (num_classes - 1)), dtype=tf.int32)
 
-    loss_op = tf.losses.sparse_softmax_cross_entropy(
+    loss_op = tf.compat.v1.losses.sparse_softmax_cross_entropy(
         logits=predicted_lt, labels=target_op, weights=mask_lt)
 
     # Scale the cross-entropy loss so that 0.0 remains perfect, and 1.0

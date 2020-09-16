@@ -401,7 +401,7 @@ def total_loss(
   input_weight = 0.5
   total_loss_op = input_weight * mean(input_loss_lts) + (
       1 - input_weight) * mean(target_loss_lts)
-  tf.summary.scalar('total_loss', total_loss_op)
+  tf.compat.v1.summary.scalar('total_loss', total_loss_op)
 
   return total_loss_op, input_loss_lts, target_loss_lts
 
@@ -420,19 +420,19 @@ def train(gitapp: controller.GetInputTargetAndPredictedParameters):
     if FLAGS.optimizer == OPTIMIZER_MOMENTUM:
       # TODO(ericmc): We may want to do weight decay with the other
       # optimizers, too.
-      learning_rate = tf.train.exponential_decay(
+      learning_rate = tf.compat.v1.train.exponential_decay(
           FLAGS.learning_rate,
           slim.variables.get_global_step(),
           FLAGS.learning_decay_steps,
           0.999,
           staircase=False)
-      tf.summary.scalar('learning_rate', learning_rate)
+      tf.compat.v1.summary.scalar('learning_rate', learning_rate)
 
-      optimizer = tf.train.MomentumOptimizer(learning_rate, 0.875)
+      optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate, 0.875)
     elif FLAGS.optimizer == OPTIMIZER_ADAGRAD:
-      optimizer = tf.train.AdagradOptimizer(FLAGS.learning_rate)
+      optimizer = tf.compat.v1.train.AdagradOptimizer(FLAGS.learning_rate)
     elif FLAGS.optimizer == OPTIMIZER_ADAM:
-      optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
+      optimizer = tf.compat.v1.train.AdamOptimizer(FLAGS.learning_rate)
     else:
       raise NotImplementedError('Unsupported optimizer: %s' % FLAGS.optimizer)
 
@@ -503,7 +503,7 @@ def eval_stitch(gitapp: controller.GetInputTargetAndPredictedParameters):
   with g.as_default():
     controller.setup_stitch(gitapp)
 
-    summary_ops = tf.get_collection(tf.compat.v1.GraphKeys.SUMMARIES)
+    summary_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.SUMMARIES)
     input_summary_op = next(
         x for x in summary_ops if 'input_error_panel' in x.name)
     target_summary_op = next(
@@ -517,7 +517,7 @@ def eval_stitch(gitapp: controller.GetInputTargetAndPredictedParameters):
         checkpoint_dir=train_directory(),
         logdir=output_directory(),
         # Merge the summaries to keep the graph state in sync.
-        summary_op=tf.summary.merge([input_summary_op, target_summary_op]),
+        summary_op=tf.compat.v1.summary.merge([input_summary_op, target_summary_op]),
         eval_interval_secs=FLAGS.eval_interval_secs)
 
 

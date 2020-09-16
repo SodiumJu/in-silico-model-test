@@ -39,7 +39,7 @@ class PassthroughTest(test_util.Base):
   def setUp(self):
     super(PassthroughTest, self).setUp()
 
-    original_op = tf.to_float(tf.range(0, 2 * 7 * 7 * 5))
+    original_op = tf.cast(tf.range(0, 2 * 7 * 7 * 5), dtype=tf.float32)
     self.original_op = tf.reshape(original_op, [2, 7, 7, 5])
 
     self.deconv_op = model_util.passthrough(4, 2, True, self.original_op)
@@ -74,7 +74,7 @@ class ResidualV2ModuleTest(test_util.Base):
   def setUp(self):
     super(ResidualV2ModuleTest, self).setUp()
 
-    original_op = tf.to_float(tf.range(0, 2 * 7 * 7 * 5))
+    original_op = tf.cast(tf.range(0, 2 * 7 * 7 * 5), dtype=tf.float32)
     self.original_op = tf.reshape(original_op, [2, 7, 7, 5])
 
     self.deconv_op = model_util.passthrough(4, 2, True, self.original_op)

@@ -62,7 +62,7 @@ def provide_preprocessed_data(
 
     A tensor with model targets.
   """
-  with tf.name_scope(name, 'provide_preprocessed_data', []) as scope:
+  with tf.compat.v1.name_scope(name, 'provide_preprocessed_data', []) as scope:
     input_lt, target_lt = data_provider.cropped_input_and_target(dp)
     visualize.summarize_image(
         visualize.canonical_image(input_lt, name=scope + 'input'))
@@ -158,7 +158,7 @@ def model(core_model: Callable,
   Returns:
     The prediction tensors in canonical prediction format.
   """
-  with tf.name_scope(name, 'model', [input_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'model', [input_lt]) as scope:
     input_lt = tensorcheck.bounds(0.0, 1.0, input_lt)
 
     for a in pp.target_axes:
@@ -229,7 +229,7 @@ def get_input_target_and_predicted(
     A tensor with predicted targets in the canonical prediction format.
   """
   logging.info('Getting model input, target, and predicted.')
-  with tf.name_scope(name, 'get_input_target_and_predicted', []) as scope:
+  with tf.compat.v1.name_scope(name, 'get_input_target_and_predicted', []) as scope:
     # Do all preprocessing on the CPU, to avoid contending with the GPU if
     # it's evaluating the model.
     # with tf.device('/cpu:0'):
@@ -301,7 +301,7 @@ def add_loss(
   Returns:
     A scalar tensor representing the weighted cross-entropy loss.
   """
-  with tf.name_scope(name, 'loss', [target_lt, predicted_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'loss', [target_lt, predicted_lt]) as scope:
     target_lt = lt.transpose(target_lt, util.CANONICAL_AXIS_ORDER)
     predicted_lt = lt.transpose(predicted_lt,
                                 util.CANONICAL_PREDICTION_AXIS_ORDER)
@@ -350,7 +350,7 @@ def itemize_losses(
   Returns:
     A dictionary mapping loss names to loss tensors.
   """
-  with tf.name_scope(name, 'itemize_losses', [target_lt, predict_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'itemize_losses', [target_lt, predict_lt]) as scope:
     loss_lts = {}
     axes = target_lt.axes
     for z in axes['z'].labels:
@@ -366,11 +366,11 @@ def itemize_losses(
         tag = '%s/%s' % (z, channel)
         loss_lt = add_loss(
             loss, target_selection_lt, predict_selection_lt, name=scope + tag)
-        tf.summary.scalar(name=os.path.join('loss', tag), tensor=loss_lt.tensor)
-        tf.summary.histogram(
+        tf.compat.v1.summary.scalar(name=os.path.join('loss', tag), tensor=loss_lt.tensor)
+        tf.compat.v1.summary.histogram(
             name=os.path.join('loss', tag, 'target'),
             values=target_selection_lt.tensor)
-        tf.summary.histogram(
+        tf.compat.v1.summary.histogram(
             name=os.path.join('loss', tag, 'predict'),
             values=predict_selection_lt.tensor)
         loss_lts[tag] = loss_lt
@@ -394,7 +394,7 @@ def setup_losses(
     A dictionary of tensors with the target prediction losses.
   """
   logging.info('Setting up losses')
-  with tf.name_scope(name, 'setup_losses', []) as scope:
+  with tf.compat.v1.name_scope(name, 'setup_losses', []) as scope:
     (_, input_lt, target_lt, predict_input_lt,
      predict_target_lt) = get_input_target_and_predicted(gitapp)
 
@@ -417,16 +417,16 @@ def setup_losses(
     tag = 'input'
     input_loss_lts = itemize_losses(
         gitapp.loss, input_lt, predict_input_lt, name=scope + tag)
-    tf.summary.scalar(name='loss/' + tag, tensor=mean(input_loss_lts))
+    tf.compat.v1.summary.scalar(name='loss/' + tag, tensor=mean(input_loss_lts))
 
     tag = 'target'
     target_loss_lts = itemize_losses(
         gitapp.loss, target_lt, predict_target_lt, name=scope + tag)
-    tf.summary.scalar(name='loss/' + tag, tensor=mean(target_loss_lts))
+    tf.compat.v1.summary.scalar(name='loss/' + tag, tensor=mean(target_loss_lts))
 
-    variables = tf.global_variables()
+    variables = tf.compat.v1.global_variables()
     for v in variables:
-      tf.summary.histogram(name='variable/' + v.name, values=v)
+      tf.compat.v1.summary.histogram(name='variable/' + v.name, values=v)
 
     return input_loss_lts, target_loss_lts
 
@@ -448,7 +448,7 @@ def setup_stitch(
     are image tensors.
   """
   logging.info('Setting up stitch')
-  with tf.name_scope(name, 'setup_stitch', []) as scope:
+  with tf.compat.v1.name_scope(name, 'setup_stitch', []) as scope:
     (patch_centers, input_lt, target_lt, predict_input_lt,
      predict_target_lt) = get_input_target_and_predicted(gitapp)
 
@@ -496,7 +496,7 @@ def setup_stitch(
       return rc.decode(ops.distribution_statistics(rc.encode(t)))
 
     # C++ entry points .
-    with tf.name_scope(''):
+    with tf.compat.v1.name_scope(''):
       input_lt = lt.identity(input_lt, name='entry_point_stitched_input')
       target_lt = lt.identity(target_lt, name='entry_point_stitched_target')
       # The nodes are used purely to export data to C++.

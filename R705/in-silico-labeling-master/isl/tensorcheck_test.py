@@ -59,12 +59,12 @@ class ShapeTest(test_util.Base):
   def setUp(self):
     super(ShapeTest, self).setUp()
 
-    filename_op = tf.train.string_input_producer([
+    filename_op = tf.compat.v1.train.string_input_producer([
         os.path.join(os.environ['TEST_SRCDIR'],
                      'isl/testdata/research_logo.jpg')
     ])
 
-    reader = tf.WholeFileReader()
+    reader = tf.compat.v1.WholeFileReader()
     _, encoded_image_op = reader.read(filename_op)
     image_op = tf.image.decode_jpeg(encoded_image_op, channels=3)
 

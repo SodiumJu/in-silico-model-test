@@ -72,7 +72,7 @@ def extract_patches_single_scale(
   Raises:
     ValueError: If num_rows - patch_size + 1 < 1.
   """
-  with tf.name_scope(name, "extract_patches_single_scale", [image_lt]) as scope:
+  with tf.compat.v1.name_scope(name, "extract_patches_single_scale", [image_lt]) as scope:
     image_lt = lt.transpose(image_lt, ["batch", "row", "column", "channel"])
     image_lt = tensorcheck.bounds(0.0, 1.0, image_lt)
 
@@ -140,22 +140,22 @@ def _distribution_statistics(distribution: tf.Tensor) -> tf.Tensor:
 
   # Each batch element is a probability distribution.
   max_discrepancy = tf.reduce_max(
-      tf.abs(tf.reduce_sum(distribution, axis=1) - 1.0))
-  with tf.control_dependencies([tf.assert_less(max_discrepancy, 0.0001)]):
+      input_tensor=tf.abs(tf.reduce_sum(input_tensor=distribution, axis=1) - 1.0))
+  with tf.control_dependencies([tf.compat.v1.assert_less(max_discrepancy, 0.0001)]):
     values = tf.reshape(tf.linspace(0.0, 1.0, num_classes), [1, num_classes])
 
-    mode = tf.to_float(tf.argmax(distribution,
-                                 axis=1)) / tf.constant(num_classes - 1.0)
+    mode = tf.cast(tf.argmax(input=distribution,
+                                 axis=1), dtype=tf.float32) / tf.constant(num_classes - 1.0)
     median = tf.reduce_sum(
-        tf.to_float(tf.cumsum(distribution, axis=1) < 0.5),
+        input_tensor=tf.cast(tf.cumsum(distribution, axis=1) < 0.5, dtype=tf.float32),
         axis=1) / tf.constant(num_classes - 1.0)
-    mean = tf.reduce_sum(distribution * values, axis=1)
+    mean = tf.reduce_sum(input_tensor=distribution * values, axis=1)
     standard_deviation = tf.sqrt(
         tf.reduce_sum(
-            ((values - tf.reshape(mean, [-1, 1]))**2) * distribution, axis=1))
+            input_tensor=((values - tf.reshape(mean, [-1, 1]))**2) * distribution, axis=1))
     probability_nonzero = 1.0 - distribution[:, 0]
     entropy = tf.reduce_sum(
-        -(distribution * tf.math.log(distribution + 0.0000001)), axis=1) / tf.math.log(
+        input_tensor=-(distribution * tf.math.log(distribution + 0.0000001)), axis=1) / tf.math.log(
             float(num_classes))
 
     statistics = tf.stack(
@@ -192,7 +192,7 @@ def distribution_statistics(distribution_lt: lt.LabeledTensor,
   """
   # This is the number of statistics computed by distribution_statistics.
   num_statistics = 6
-  with tf.name_scope(name, "distribution_statistics",
+  with tf.compat.v1.name_scope(name, "distribution_statistics",
                      [distribution_lt]) as scope:
     distribution_lt = lt.transpose(distribution_lt, ["batch", "class"])
 
@@ -231,7 +231,7 @@ def patches_to_image(patch_centers: np.ndarray,
     A composited image as a float32 Tensor with axes [batch, row, column,
       channel].
   """
-  with tf.name_scope(name, "patches_to_image", [patch_lt]) as scope:
+  with tf.compat.v1.name_scope(name, "patches_to_image", [patch_lt]) as scope:
     patch_lt = lt.transpose(patch_lt, ["batch", "row", "column", "channel"])
 
     num_extracted_rows = len(set([l[0] for l in patch_centers]))

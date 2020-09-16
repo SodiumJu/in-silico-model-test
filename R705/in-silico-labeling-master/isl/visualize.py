@@ -56,7 +56,7 @@ def to_softmax(
   Returns:
     A tensor with probability distributions created via the softmax function.
   """
-  with tf.name_scope(name, 'to_softmax', [logit_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'to_softmax', [logit_lt]) as scope:
     logit_lt = lt.transpose(logit_lt, util.CANONICAL_PREDICTION_AXIS_ORDER)
 
     rc = lt.ReshapeCoder(list(logit_lt.axes.keys())[:-1], ['batch'])
@@ -87,7 +87,7 @@ def add_border(
     If the input lacked a 'color' axis, this adds the axis ('color',
       ['red', 'green', 'blue']).
   """
-  with tf.name_scope(name, 'add_border', [labeled_tensor]) as scope:
+  with tf.compat.v1.name_scope(name, 'add_border', [labeled_tensor]) as scope:
     if 'color' not in labeled_tensor.axes:
       split_lts = [labeled_tensor, labeled_tensor, labeled_tensor]
       final_axis_order = list(labeled_tensor.axes.keys()) + ['color']
@@ -130,7 +130,7 @@ def summarize_image(image_lt: lt.LabeledTensor, name: str = None) -> tf.Tensor:
   Returns:
     The image summary.
   """
-  with tf.name_scope(name, 'summarize_image', [image_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'summarize_image', [image_lt]) as scope:
     # Downscale an images with more than this many pixels.
     max_num_pixels = 1 << 22
 
@@ -154,13 +154,13 @@ def summarize_image(image_lt: lt.LabeledTensor, name: str = None) -> tf.Tensor:
       resized_num_rows = int(scale_factor * num_rows)
       resized_num_columns = int(scale_factor * num_columns)
 
-      resize_op = tf.image.resize_bilinear(
-          image_lt.tensor, [resized_num_rows, resized_num_columns])
+      resize_op = tf.image.resize(
+          image_lt.tensor, [resized_num_rows, resized_num_columns], method=tf.image.ResizeMethod.BILINEAR)
       image_lt = lt.LabeledTensor(
           resize_op,
           ['batch', 'row', 'column', ('color', ['red', 'green', 'blue'])])
 
-    return tf.summary.image(tensor=image_lt.tensor, name=scope)
+    return tf.compat.v1.summary.image(tensor=image_lt.tensor, name=scope)
 
 
 def colorize(
@@ -179,7 +179,7 @@ def colorize(
   Returns:
     A color image tensor with a new 'color' axis.
   """
-  with tf.name_scope(name, 'colorize', [image_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'colorize', [image_lt]) as scope:
     scaled_lts = []
     for c in color_scheme:
       assert c >= 0.0
@@ -210,7 +210,7 @@ def additive_error(
     with a blue tint is a false negative, and anything with an orange tint
     is a false positive.
   """
-  with tf.name_scope(name, 'additive_error',
+  with tf.compat.v1.name_scope(name, 'additive_error',
                      [target_lt, predicted_lt]) as scope:
     target_lt = lt.transpose(target_lt, ['batch', 'row', 'column', 'channel'])
     predicted_lt = lt.transpose(predicted_lt,
@@ -239,7 +239,7 @@ def subtractive_error(
     Black is correct, anything blue is a false negative, and anything orange
     is a false positive.
   """
-  with tf.name_scope(name, 'subtractive_error',
+  with tf.compat.v1.name_scope(name, 'subtractive_error',
                      [target_lt, predicted_lt]) as scope:
     target_lt = lt.transpose(target_lt, ['batch', 'row', 'column', 'channel'])
     predicted_lt = lt.transpose(predicted_lt,
@@ -248,9 +248,9 @@ def subtractive_error(
     difference_lt = predicted_lt - target_lt
 
     false_positive_lt = lt.LabeledTensor(
-        tf.to_float(difference_lt.tensor > 0), difference_lt.axes)
+        tf.cast(difference_lt.tensor > 0, dtype=tf.float32), difference_lt.axes)
     false_negative_lt = lt.LabeledTensor(
-        tf.to_float(difference_lt.tensor < 0), difference_lt.axes)
+        tf.cast(difference_lt.tensor < 0, dtype=tf.float32), difference_lt.axes)
 
     false_positive_lt = difference_lt * false_positive_lt
     false_negative_lt = difference_lt * false_negative_lt * (-1.0)
@@ -277,7 +277,7 @@ def cross_entropy_error(
     The cross entropy visualization of the error, where black is no error
     and white is the error of a uniform predictor.
   """
-  with tf.name_scope(name, 'cross_entropy_error',
+  with tf.compat.v1.name_scope(name, 'cross_entropy_error',
                      [target_lt, predicted_lt]) as scope:
     epsilon = 0.000001
     product_lt = lt.LabeledTensor(
@@ -307,7 +307,7 @@ def canonical_image(
   Returns:
     An image.
   """
-  with tf.name_scope(name, 'canonical_image', [canonical_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'canonical_image', [canonical_lt]) as scope:
     canonical_lt = lt.transpose(canonical_lt, util.CANONICAL_AXIS_ORDER)
 
     rows = []
@@ -346,7 +346,7 @@ def error_panel(
   Returns:
     The error panel.
   """
-  with tf.name_scope(name, 'error_panel', [target_lt, predicted_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'error_panel', [target_lt, predicted_lt]) as scope:
     target_lt = lt.transpose(target_lt, util.CANONICAL_AXIS_ORDER)
     predicted_lt = lt.transpose(predicted_lt,
                                 util.CANONICAL_PREDICTION_AXIS_ORDER)
@@ -437,7 +437,7 @@ def error_panel_from_statistics(
   Returns:
     The error panel.
   """
-  with tf.name_scope(name, 'error_panel_from_statistics',
+  with tf.compat.v1.name_scope(name, 'error_panel_from_statistics',
                      [target_lt, statistic_lt]) as scope:
     target_lt = lt.transpose(target_lt, util.CANONICAL_AXIS_ORDER)
     statistic_lt = lt.transpose(statistic_lt,

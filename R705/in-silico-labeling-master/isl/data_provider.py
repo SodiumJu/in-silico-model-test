@@ -113,7 +113,7 @@ def get_image_by_attributes(images: Dict[ImageMetadata, np.ndarray],
 
 def tensor_from_array(image: np.ndarray) -> tf.Tensor:
   """Create a tensor from an array without saving the data in the Graph."""
-  tensor = tf.py_func(lambda: image, [], tf.float32)
+  tensor = tf.compat.v1.py_func(lambda: image, [], tf.float32)
   num_rows, num_columns = image.shape
   tensor.set_shape([num_rows, num_columns])
   return tensor
@@ -143,7 +143,7 @@ def image_set_to_tensor(images: Dict[ImageMetadata, np.ndarray],
   Raises:
     ValueError: If zero z or channel values are supplied.
   """
-  with tf.name_scope(name, 'load_image_set_as_tensor', []) as scope:
+  with tf.compat.v1.name_scope(name, 'load_image_set_as_tensor', []) as scope:
 
     def crop(image: np.ndarray) -> tf.Tensor:
       tensor = tensor_from_array(image)
@@ -197,15 +197,15 @@ def read_serialized_example(
   Returns:
     A tensor of shape [batch_size] containing serialized tf.Example protos.
   """
-  with tf.name_scope(name, 'read_serialized_example', []) as scope:
+  with tf.compat.v1.name_scope(name, 'read_serialized_example', []) as scope:
     if is_deterministic:
       seed = 0
     else:
       seed = None
-    filename_op = tf.train.string_input_producer(shard_paths, seed=seed)
+    filename_op = tf.compat.v1.train.string_input_producer(shard_paths, seed=seed)
 
     if is_recordio:
-      reader = tf.TFRecordReader()
+      reader = tf.compat.v1.TFRecordReader()
     else:
       raise NotImplementedError('Only TFRecords are currently supported.')
     _, serialized_example_op = reader.read(filename_op)
@@ -222,7 +222,7 @@ def read_serialized_example(
         seed=seed)
 
     # C++ entry point.
-    with tf.name_scope(''):
+    with tf.compat.v1.name_scope(''):
       batch_lt = lt.identity(batch_lt, name='entry_point_serialized_example')
     return lt.identity(batch_lt, name=scope)
 
@@ -257,11 +257,11 @@ def decode_single(
     from the tf.Example are black.
     Image pixels are floats in the range [0.0, 1.0].
   """
-  with tf.name_scope(name, 'decode_single', [serialized_example_lt]) as scope:
-    features = {'TRAIN_TUPLE': tf.FixedLenFeature([], dtype=tf.string)}
+  with tf.compat.v1.name_scope(name, 'decode_single', [serialized_example_lt]) as scope:
+    features = {'TRAIN_TUPLE': tf.io.FixedLenFeature([], dtype=tf.string)}
     encoded_train_tuple_op = tf.reshape(
-        tf.parse_example(tf.reshape(serialized_example_lt, [1]),
-                         features)['TRAIN_TUPLE'], [])
+        tf.io.parse_example(serialized=tf.reshape(serialized_example_lt, [1]),
+                         features=features)['TRAIN_TUPLE'], [])
 
     encoded_image_op = tf.reshape(
         ops.train_tuple_to_images([str(z) for z in z_values], channel_values,
@@ -274,19 +274,19 @@ def decode_single(
         dtype=tf.uint16)
     images_op = tf.squeeze(images_op, [3])
     # This has shape row x column x (z * channel * mask).
-    images_op = tf.transpose(images_op, [1, 2, 0])
+    images_op = tf.transpose(a=images_op, perm=[1, 2, 0])
 
     if pad_size > 0:
       images_op = tf.pad(
-          images_op, [[pad_size, pad_size], [pad_size, pad_size], [0, 0]],
+          tensor=images_op, paddings=[[pad_size, pad_size], [pad_size, pad_size], [0, 0]],
           mode='CONSTANT')
 
-    images_op = tf.random_crop(
+    images_op = tf.image.random_crop(
         images_op, [crop_size, crop_size,
                     images_op.shape_as_list()[2]], seed=0)
     images_op = tensorcheck.shape_unlabeled(images_op)
     # We assume 16-bit images.
-    images_op = tf.to_float(images_op) / np.iinfo(np.uint16).max
+    images_op = tf.cast(images_op, dtype=tf.float32) / np.iinfo(np.uint16).max
 
     images_op = tensorcheck.bounds_unlabeled(0.0, 1.0, images_op)
 
@@ -314,7 +314,7 @@ def decode_seeing_more(
     name: str = None,
 ) -> lt.LabeledTensor:
   """A batch version of decode_single."""
-  with tf.name_scope(name, 'decode_seeing_more',
+  with tf.compat.v1.name_scope(name, 'decode_seeing_more',
                      [serialized_example_lt]) as scope:
     serialized_example_lt = lt.transpose(serialized_example_lt, ['batch'])
 
@@ -339,7 +339,7 @@ def add_neurite_confocal(
     The target tensor with a new 'NEURITE_CONFOCAL' channel, which is the
     average of the NFH_CONFOCAL and MAP2_CONFOCAL channels.
   """
-  with tf.name_scope(name, 'add_neurite_confocal', [target_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'add_neurite_confocal', [target_lt]) as scope:
     target_lt = lt.transpose(target_lt, util.CANONICAL_AXIS_ORDER)
     neurite_lts = []
     for m in [False, True]:
@@ -383,7 +383,7 @@ def add_synthetic_channels(
   Returns:
     The input target tensor, with additional synthetic channels.
   """
-  with tf.name_scope(name, 'add_synthetic_channels',
+  with tf.compat.v1.name_scope(name, 'add_synthetic_channels',
                      [target_lt.tensor]) as scope:
     if 'NFH_CONFOCAL' in target_lt.axes['channel'].labels and 'MAP2_CONFOCAL' in target_lt.axes['channel'].labels:
       return add_neurite_confocal(target_lt, name=scope)
@@ -431,7 +431,7 @@ def cropped_input_and_target(
     name: str = None,
 ) -> Tuple[lt.LabeledTensor, lt.LabeledTensor]:
   """Reads and crops input images."""
-  with tf.name_scope(name, 'cropped_input_and_target', []) as scope:
+  with tf.compat.v1.name_scope(name, 'cropped_input_and_target', []) as scope:
     if isinstance(dp.io_parameters, ReadPNGsParameters):
       image_set = load_image_set(dp.io_parameters.directory)
       num_rows, num_columns = list(image_set.values())[0].shape
@@ -443,13 +443,13 @@ def cropped_input_and_target(
           'number of image columns.')
 
       if dp.io_parameters.row_start is None:
-        row_start = tf.random_uniform(
+        row_start = tf.random.uniform(
             [], 0, num_rows - dp.io_parameters.crop_size + 1, dtype=tf.int32)
       else:
         row_start = dp.io_parameters.row_start
 
       if dp.io_parameters.column_start is None:
-        column_start = tf.random_uniform(
+        column_start = tf.random.uniform(
             [], 0, num_columns - dp.io_parameters.crop_size + 1, dtype=tf.int32)
       else:
         column_start = dp.io_parameters.column_start

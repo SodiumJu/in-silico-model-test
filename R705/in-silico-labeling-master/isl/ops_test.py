@@ -174,10 +174,10 @@ class TrainTupleToImagesTest(test_util.Base):
     encoded_example = gfile.GFile(tensorflow_example_path).read()
 
     encoded_example_op = tf.constant(encoded_example)
-    features = {"TRAIN_TUPLE": tf.FixedLenFeature([], dtype=tf.string)}
+    features = {"TRAIN_TUPLE": tf.io.FixedLenFeature([], dtype=tf.string)}
     encoded_train_tuple_op = tf.reshape(
-        tf.parse_example(tf.reshape(encoded_example_op, [1]),
-                         features)["TRAIN_TUPLE"], [])
+        tf.io.parse_example(serialized=tf.reshape(encoded_example_op, [1]),
+                         features=features)["TRAIN_TUPLE"], [])
 
     self.encoded_image_op = ops.train_tuple_to_images(
         [str(z) for z in input_z_values] + target_z_values,

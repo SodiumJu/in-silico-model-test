@@ -68,7 +68,7 @@ def residual_v2_conv(
   Returns:
     The tensor output of residual convolution.
   """
-  with tf.variable_scope(name, 'residual_v2_conv', [input_op]) as scope:
+  with tf.compat.v1.variable_scope(name, 'residual_v2_conv', [input_op]) as scope:
     [_, num_rows, num_columns, _] = input_op.shape.as_list()
     if not is_deconv:
       assert num_rows >= kernel_size
@@ -88,7 +88,7 @@ def residual_v2_conv(
         stride=stride,
         padding='VALID'):
       if add_bias:
-        biases_initializer = tf.zeros_initializer()
+        biases_initializer = tf.compat.v1.zeros_initializer()
       else:
         biases_initializer = None
       with slim.arg_scope(
@@ -130,7 +130,7 @@ def add_with_mismatched_depths(
   Returns:
     The sum of the two tensors, possibly after zero-padding or cropping.
   """
-  with tf.variable_scope(name, 'add_with_mismatched_depths',
+  with tf.compat.v1.variable_scope(name, 'add_with_mismatched_depths',
                          [a_op, b_op]) as scope:
     assert len(a_op.shape.as_list()) == 4
     assert len(b_op.shape.as_list()) == 4
@@ -182,7 +182,7 @@ def passthrough(
     In the case the stride is 1, it is simply a center crop of the input.
     Generally, it is an average pooling of a center crop.
   """
-  with tf.name_scope(name, 'passthrough', [input_op]) as scope:
+  with tf.compat.v1.name_scope(name, 'passthrough', [input_op]) as scope:
     # TODO(ericmc): Support more configurations.
     conv_valid_3 = not is_deconv and (kernel_size == 3 and stride == 1)
     conv_valid_4 = not is_deconv and (kernel_size == 4 and stride == 2)
@@ -199,20 +199,20 @@ def passthrough(
     assert num_rows == num_columns
     if is_deconv:
       interior_op = tf.tile(input_op, [1, 1, 1, 4])
-      interior_op = tf.depth_to_space(interior_op, 2)
+      interior_op = tf.compat.v1.depth_to_space(input=interior_op, block_size=2)
       if kernel_size == 2:
         return tf.identity(interior_op, name=scope)
       else:
         return tf.pad(
-            interior_op, [[0, 0], [1, 1], [1, 1], [0, 0]],
+            tensor=interior_op, paddings=[[0, 0], [1, 1], [1, 1], [0, 0]],
             mode='SYMMETRIC',
             name=scope)
     else:
       interior_op = util.crop_center_unlabeled(num_rows - 2, input_op)
 
       # Do simple scaling via averaging.
-      return tf.nn.avg_pool(
-          interior_op, [1, pool_size, pool_size, 1], [1, stride, stride, 1],
+      return tf.nn.avg_pool2d(
+          input=interior_op, ksize=[1, pool_size, pool_size, 1], strides=[1, stride, stride, 1],
           padding='VALID',
           name=scope)
 
@@ -249,7 +249,7 @@ def module(
   Returns:
     The tensor output of the Minception module.
   """
-  with tf.variable_scope(name, 'module', [input_op]) as scope:
+  with tf.compat.v1.variable_scope(name, 'module', [input_op]) as scope:
     if min_depth_from_residual:
       residual_depth = input_op.shape.as_list()[3]
       reduction_depth = max(reduction_depth, residual_depth)
@@ -287,7 +287,7 @@ def module(
     activation_op = add_with_mismatched_depths(
         input_op, reduce_op, pad=not is_deconv, name=scope)
 
-    tf.summary.histogram('activation', activation_op)
+    tf.compat.v1.summary.histogram('activation', activation_op)
     return activation_op
 
 
@@ -450,7 +450,7 @@ def add_head(
   Returns:
     A tensor with shape [batch, row, column, class].
   """
-  with tf.variable_scope(name, 'head', [input_op]) as scope:
+  with tf.compat.v1.variable_scope(name, 'head', [input_op]) as scope:
     [batch_size, num_rows, num_columns, _] = input_op.shape.as_list()
 
     if is_residual_conv:
@@ -468,9 +468,9 @@ def add_head(
           input_op,
           num_classes, [1, 1],
           activation_fn=None,
-          biases_initializer=tf.zeros_initializer())
+          biases_initializer=tf.compat.v1.zeros_initializer())
 
-    tf.summary.histogram('logit', logit_op)
+    tf.compat.v1.summary.histogram('logit', logit_op)
 
     return tf.reshape(
         logit_op, [batch_size, num_rows, num_columns, num_classes],

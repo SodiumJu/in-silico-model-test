@@ -87,13 +87,13 @@ class Base(tf.test.TestCase):
     # All images will be cropped to this size.
     crop_size = 1024
 
-    filename_op = tf.train.string_input_producer([self.data_path(image_name)])
-    wfr = tf.WholeFileReader()
+    filename_op = tf.compat.v1.train.string_input_producer([self.data_path(image_name)])
+    wfr = tf.compat.v1.WholeFileReader()
     _, encoded_png_op = wfr.read(filename_op)
     image_op = tf.image.decode_png(
         tf.reshape(encoded_png_op, shape=[]), channels=1, dtype=tf.uint16)
     image_op = image_op[:crop_size, :crop_size, :]
-    image_op = tf.to_float(image_op) / np.iinfo(np.uint16).max
+    image_op = tf.cast(image_op, dtype=tf.float32) / np.iinfo(np.uint16).max
     image_op = tf.reshape(image_op, [1, 1024, 1024, 1])
 
     return lt.LabeledTensor(
@@ -170,20 +170,20 @@ class Base(tf.test.TestCase):
         t.tensor if isinstance(t, lt.LabeledTensor) else t for t in tensors
     ]
 
-    run_metadata = tf.RunMetadata()
-    sv = tf.train.Supervisor(graph=tensors[0].graph)
+    run_metadata = tf.compat.v1.RunMetadata()
+    sv = tf.compat.v1.train.Supervisor(graph=tensors[0].graph)
     sess = sv.PrepareSession()
     sv.StartQueueRunners(sess)
 
     results = sess.run(
         tensors,
-        options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE),
+        options=tf.compat.v1.RunOptions(trace_level=tf.compat.v1.RunOptions.FULL_TRACE),
         run_metadata=run_metadata)
 
     options = tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY
     options['viz'] = True
     tf.contrib.tfprof.model_analyzer.print_model_analysis(
-        tf.get_default_graph(), run_meta=run_metadata, tfprof_options=options)
+        tf.compat.v1.get_default_graph(), run_meta=run_metadata, tfprof_options=options)
 
     sv.Stop()
 
@@ -196,7 +196,7 @@ class Base(tf.test.TestCase):
         t.tensor if isinstance(t, lt.LabeledTensor) else t for t in tensors
     ]
 
-    sv = tf.train.Supervisor(graph=tensors[0].graph)
+    sv = tf.compat.v1.train.Supervisor(graph=tensors[0].graph)
     sess = sv.PrepareSession()
     # sess.run([tf.initialize_all_variables()])
     sv.StartQueueRunners(sess)

@@ -35,7 +35,7 @@ class OnehotTest(test_util.Base):
   def setUp(self):
     super(OnehotTest, self).setUp()
 
-    original_op = tf.to_float(tf.constant(range(4))) / 3.0
+    original_op = tf.cast(tf.constant(range(4)), dtype=tf.float32) / 3.0
     original_lt = lt.LabeledTensor(original_op, ['batch'])
     self.onehot_lt = util.onehot(4, original_lt)
 

@@ -277,7 +277,7 @@ def infer(
       [input_error_panel, target_error_panel, global_step] = sess.run(
           [
               input_error_panel_lt, target_error_panel_lt,
-              tf.train.get_global_step()
+              tf.compat.v1.train.get_global_step()
           ],
           feed_dict={
               input_lt: stitched_input,

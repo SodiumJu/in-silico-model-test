@@ -189,7 +189,7 @@ class SetupLossesTest(Base):
 
     loss_op = (mean(self.input_loss_lts) + mean(self.target_loss_lts)) / 2.0
 
-    train_op = tf.train.GradientDescentOptimizer(0.00001).minimize(loss_op)
+    train_op = tf.compat.v1.train.GradientDescentOptimizer(0.00001).minimize(loss_op)
     self.eval([train_op])
 
 

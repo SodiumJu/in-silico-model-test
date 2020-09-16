@@ -49,7 +49,7 @@ def corrupt(offset_standard_deviation: float,
   Returns:
     The tensor input * multiplier + offset + noise.
   """
-  with tf.name_scope(name, 'corrupt', [labeled_tensor]) as scope:
+  with tf.compat.v1.name_scope(name, 'corrupt', [labeled_tensor]) as scope:
     labeled_tensor = lt.transpose(labeled_tensor,
                                   ['batch', 'row', 'column', 'channel'])
     [batch_size, num_rows, num_columns,
@@ -57,43 +57,43 @@ def corrupt(offset_standard_deviation: float,
 
     axes = ['batch', 'row', 'column', 'channel']
     offset_lt = lt.LabeledTensor(
-        tf.random_normal(
+        tf.random.normal(
             [batch_size, num_channels],
             mean=0.0,
             stddev=offset_standard_deviation,
             seed=0), ['batch', 'channel'])
     multiplier_lt = lt.LabeledTensor(
-        tf.random_normal(
+        tf.random.normal(
             [batch_size, num_channels],
             mean=1.0,
             stddev=multiplier_standard_deviation,
             seed=0), ['batch', 'channel'])
     noise_lt = lt.LabeledTensor(
-        tf.random_normal(
+        tf.random.normal(
             [batch_size, num_rows, num_columns, num_channels],
             mean=0.0,
             stddev=noise_standard_deviation,
             seed=0), axes)
 
     def do_corrupt() -> tf.Tensor:
-      return tf.random_uniform(()) < CORRUPTION_PROBABILITY
+      return tf.random.uniform(()) < CORRUPTION_PROBABILITY
 
     corrupt_lt = lt.LabeledTensor(
         tf.cond(
-            tf.math.logical_and(do_corrupt(), multiplier_standard_deviation > 0),
-            lambda: labeled_tensor * multiplier_lt, lambda: labeled_tensor),
+            pred=tf.math.logical_and(do_corrupt(), multiplier_standard_deviation > 0),
+            true_fn=lambda: labeled_tensor * multiplier_lt, false_fn=lambda: labeled_tensor),
         axes=labeled_tensor.axes)
 
     corrupt_lt = lt.LabeledTensor(
         tf.cond(
-            tf.math.logical_and(do_corrupt(), offset_standard_deviation > 0),
-            lambda: corrupt_lt + offset_lt, lambda: corrupt_lt),
+            pred=tf.math.logical_and(do_corrupt(), offset_standard_deviation > 0),
+            true_fn=lambda: corrupt_lt + offset_lt, false_fn=lambda: corrupt_lt),
         axes=labeled_tensor.axes)
 
     corrupt_lt = lt.LabeledTensor(
         tf.cond(
-            tf.math.logical_and(do_corrupt(), noise_standard_deviation > 0),
-            lambda: corrupt_lt + noise_lt, lambda: corrupt_lt),
+            pred=tf.math.logical_and(do_corrupt(), noise_standard_deviation > 0),
+            true_fn=lambda: corrupt_lt + noise_lt, false_fn=lambda: corrupt_lt),
         axes=labeled_tensor.axes)
 
     clip_lt = lt.LabeledTensor(
@@ -118,7 +118,7 @@ def _random_flip_and_rotation(image_lt: lt.LabeledTensor) -> lt.LabeledTensor:
 
   flip_op = tf.map_fn(tf.image.random_flip_left_right, image_lt.tensor)
 
-  num_rotations_op = tf.random_uniform((), 0, 4, dtype=tf.int32)
+  num_rotations_op = tf.random.uniform((), 0, 4, dtype=tf.int32)
   rotate_op = tf.map_fn(lambda image: tf.image.rot90(image, k=num_rotations_op),
                         flip_op)
 
@@ -142,7 +142,7 @@ def augment(ap: AugmentParameters,
     Both tensors are rotated and flipped, and the input tensor additionally
     has added noise.
   """
-  with tf.name_scope(name, 'augment', [input_lt, target_lt]) as scope:
+  with tf.compat.v1.name_scope(name, 'augment', [input_lt, target_lt]) as scope:
     input_lt = lt.transpose(input_lt, util.CANONICAL_AXIS_ORDER)
     target_lt = lt.transpose(target_lt, util.CANONICAL_AXIS_ORDER)
 
